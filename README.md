@@ -3,7 +3,7 @@
 * https://www.youtube.com/watch?v=8lligATtAWs
 * https://www.youtube.com/watch?v=NI8EPsuRrsU
 
-### Setup compute node on Ubuntu 16.04 in a SLURM cluster
+### Setup a compute node on Ubuntu 16.04 in a SLURM cluster
 
 * make, povray, ffmpeg
 * munged
@@ -110,4 +110,29 @@ Edit ```/etc/fstab```
 
 ```bash
 sudo mount /nfs/data
+```
+
+
+### Submit a test rendering job via run.sh
+
+```bash
+koppi@x200:~/data/demo-povay-slurm$ ./run.sh -s sphere
+submitting job sphere.pov with 300 frames
+ executing: sbatch --hint=compute_bound -n 1 -J povray -p debug -t 8:00:00 -O -J sphere -a 0-300 povray.sbatch sphere 300 '+A0.01 -J +W1280 +H720'
+   * created povray job 33237  in /home/koppi/data/demo-povay-slurm/sphere-33237
+    executing: sbatch --hint=compute_bound -n 1 -J povray -p debug -t 8:00:00 --job-name=ffmpeg --depend=afterok:33237 -D sphere-33237 sphere-33237/ffmpeg.sbatch
+      * created ffmpeg job 33238 for /home/koppi/data/demo-povay-slurm/sphere-33237
+      done
+      
+```
+
+Watch the job queue:
+```bash
+$ watch squeue 
+             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+    33237_[44-300]     debug   sphere    koppi PD       0:00      1 (Resources)
+             33238     debug   ffmpeg    koppi PD       0:00      1 (Dependency)
+          33237_43     debug   sphere    koppi  R       0:03      1 dell
+          33237_42     debug   sphere    koppi  R       0:04      1 x220
+          33237_41     debug   sphere    koppi  R       0:05      1 x200
 ```
