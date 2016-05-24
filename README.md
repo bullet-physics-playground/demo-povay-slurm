@@ -32,7 +32,7 @@ Change the ```ExecStart``` line to read:
 ExecStart=/usr/sbin/munged --force
 ```
 
-Copy the ```/etc/munge/munge.key``` from your another node and check user, groups and permission flags:
+Copy the ```/etc/munge/munge.key``` from another compute node in the cluster and check user, groups and permission flags:
 ```bash
 # ls -al /etc/munge/munge.key
 -r-------- 1 munge munge 1024 Mai 24 16:55 /etc/munge/munge.key
@@ -43,7 +43,7 @@ Restart the munge.service:
 sudo systemctl restart munge
 ```
 
-Test that munge works:
+Test, that munge works:
 ```bash
 munge -n | ssh <clusternode> unmunge
 ```
@@ -56,7 +56,7 @@ sudo apt -y install slurmd
 
 The start of the slurmd.service will fail.
 
-Edit the slurmd systemd unit file:
+To fix this, edit the slurmd systemd unit file:
 ```bash
 sudo systemctl edit --system --full slurmd
 ```
