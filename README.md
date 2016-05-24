@@ -115,15 +115,15 @@ sudo mount /nfs/data
 
 ### Submit a test rendering job via run.sh
 
+Render your first POV-Ray animation:
 ```bash
 koppi@x200:~/data/demo-povay-slurm$ ./run.sh -s sphere
 submitting job sphere.pov with 300 frames
  executing: sbatch --hint=compute_bound -n 1 -J povray -p debug -t 8:00:00 -O -J sphere -a 0-300 povray.sbatch sphere 300 '+A0.01 -J +W1280 +H720'
-   * created povray job 33237  in /home/koppi/data/demo-povay-slurm/sphere-33237
-    executing: sbatch --hint=compute_bound -n 1 -J povray -p debug -t 8:00:00 --job-name=ffmpeg --depend=afterok:33237 -D sphere-33237 sphere-33237/ffmpeg.sbatch
-      * created ffmpeg job 33238 for /home/koppi/data/demo-povay-slurm/sphere-33237
-      done
-      
+  * created povray job 33237  in /home/koppi/data/demo-povay-slurm/sphere-33237
+ executing: sbatch --hint=compute_bound -n 1 -J povray -p debug -t 8:00:00 --job-name=ffmpeg --depend=afterok:33237 -D sphere-33237 sphere-33237/ffmpeg.sbatch
+  * created ffmpeg job 33238 for /home/koppi/data/demo-povay-slurm/sphere-33237
+done
 ```
 
 Watch the job queue:
