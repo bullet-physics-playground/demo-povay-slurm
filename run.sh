@@ -5,8 +5,9 @@ readonly DEF_NUM_CPUS=1
 readonly DEF_PARTITION=debug
 readonly DEF_JOB_NAME=povray
 readonly DEF_SCENE=sphere
-readonly DEF_FRAMES=300
-readonly DEF_POVARGS="+A0.01 -J +W1280 +H720"
+readonly DEF_FRAMES=600
+readonly DEF_POVARGS="+A0.01 -J +W7680 +H4320"
+readonly DEF_SLURM_CPUS_PER_TASK=4
 
 ######
 
@@ -16,14 +17,16 @@ readonly ARGS="$@"
 SCENE=$DEF_SCENE
 FRAMES=$DEF_FRAMES
 POV_ARGS="$DEF_POVARGS"
+SLURM_CPUS_PER_TASK=$DEF_SLURM_CPUS_PER_TASK
 
 function usage() {
     cat <<-EOF
 
- usage: $PROGNAME [-c] [-p] [-J] [-w] [-s] [-f] [-o]
+ usage: $PROGNAME [-c] [-t] [-p] [-J] [-w] [-s] [-f] [-o]
 
  optional arguments:
     -c: number of CPU cores to request (default: $DEF_NUM_CPUS)
+    -t: number of CPU cores per task (default: $DEF_SLURM_CPUS_PER_TASK)
     -p: partition to run job in (default: $DEF_PARTITION)
     -J: job name (default: $DEF_JOB_NAME)
     -s: povray scene (default: $DEF_SCENE)
@@ -39,8 +42,16 @@ EOF
 }
 
 function parse_options() {
-    while getopts ":c:p:J:w:s:f:" opt; do
+    while getopts ":t:c:p:J:w:s:f:" opt; do
         case $opt in
+            t)
+                # make sure -t is passed a valid integer
+                if ! [[ "$OPTARG" =~ ^[0-9]+$ ]]; then
+                    usage
+                fi
+
+                SLURM_CPUS_PER_TASK=$OPTARG
+                ;;
             c)
                 # make sure -c is passed a valid integer
                 if ! [[ "$OPTARG" =~ ^[0-9]+$ ]]; then
@@ -84,6 +95,8 @@ function envsetup() {
     # set the CPU allocation
     SBATCH_OPTS="-n $NUM_CPUS"
 
+    SBATCH_OPTS="$SBATCH_OPTS --cpus-per-task $SLURM_CPUS_PER_TASK"
+
     # check for a job name, otherwise use default
     SBATCH_OPTS="$SBATCH_OPTS -J ${JOB_NAME:-$DEF_JOB_NAME}"
 
@@ -120,7 +133,7 @@ mkdir -p $JOB
 echo "  * created povray job $ID  in `pwd`/$JOB"
 
 echo "#!/usr/bin/env bash" > $JOB/ffmpeg.sbatch
-echo "time nice ffmpeg -y -framerate 25 -pattern_type glob -i '*.png' -c:v libx264 -preset veryslow -qp 0 -r 25 -pix_fmt yuv420p ../$SCENE-$ID.mkv" >> $JOB/ffmpeg.sbatch
+echo "time nice ffmpeg -y -framerate 60 -pattern_type glob -i '*.png' -c:v libx264 -preset veryslow -qp 0 -r 60 -pix_fmt yuv420p ../$SCENE-$ID.mkv" >> $JOB/ffmpeg.sbatch
 
 CMD="sbatch --hint=compute_bound $SBATCH_OPTS --job-name=ffmpeg --depend=afterok:$ID -D $JOB $JOB/ffmpeg.sbatch"
 

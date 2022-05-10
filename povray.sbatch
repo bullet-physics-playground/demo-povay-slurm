@@ -10,7 +10,7 @@
 SCENE=${1}
 FRAMES=${2}
 
-POVARGS="+W1280 +H720 +A0.3 -J"
+POVARGS="+W7680 +H4320 +A0.3 -J"
 
 if [ -z "${SCENE}" ]; then
   echo "SCENE is unset or set to the empty string"
@@ -28,4 +28,4 @@ echo
 
 PNG="$SCENE-$(printf "%07d" $FRAME).png"
 
-time nice povray $SCENE.pov -L.. -V -D +KFI0 +KFF$FRAMES +SF$FRAME +EF$FRAME $POVARGS -O- > $WORKDIR/$PNG
+time nice povray $SCENE.pov -L.. -V -D +KFI0 +KFF$FRAMES +SF$FRAME +EF$FRAME +wt$SLURM_CPUS_PER_TASK $POVARGS -O- > $WORKDIR/$PNG
